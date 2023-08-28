@@ -9,28 +9,54 @@
           width: 400px;
           height: 400px;
           border: 2px dashed #aaa;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+      }
+
+      #body {
+          background-image: url('img/body.webp');
+          position: absolute;
+          width: 100px;
+          height: 100px;
+          background-size: cover;
+          background-repeat: no-repeat;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          aspect-ratio: 1/1; /* Set aspect ratio to match the image */
       }
 
       .clothing-item {
           position: absolute;
+          width: 100px;
+          height: 100px;
           cursor: pointer;
+          background-size: cover;
+          background-repeat: no-repeat;
+      }
+
+      .shirt {
+          background-image: url('img/t-shirt_white.png');
       }
   </style>
 </head>
 <body>
 <div class="dress-up-container">
-  <div class="clothing-item" style="background-image: url(img/body.webp); width: 232px; height: 539px"></div>
+  <div id="body"></div>
+  <div class="clothing-item shirt" style="top: 250px; left: 150px;"></div>
 </div>
 
 <script>
   const clothingItems = document.querySelectorAll('.clothing-item');
   let activeItem = null;
+  let offsetX, offsetY;
 
   clothingItems.forEach(item => {
     item.addEventListener('mousedown', (e) => {
       activeItem = item;
-      const offsetX = e.clientX - item.getBoundingClientRect().left;
-      const offsetY = e.clientY - item.getBoundingClientRect().top;
+      offsetX = e.clientX - item.getBoundingClientRect().left;
+      offsetY = e.clientY - item.getBoundingClientRect().top;
 
       item.style.zIndex = 1;
       item.style.transform = 'scale(1.1)';
@@ -44,15 +70,18 @@
         item.style.cursor = 'pointer';
         activeItem = null;
       });
-
-      function moveItem(e) {
-        const x = e.clientX - offsetX;
-        const y = e.clientY - offsetY;
-        item.style.left = x + 'px';
-        item.style.top = y + 'px';
-      }
     });
   });
+
+  function moveItem(e) {
+    if (!activeItem) {
+      return;
+    }
+    const x = e.clientX - offsetX;
+    const y = e.clientY - offsetY;
+    activeItem.style.left = x + 'px';
+    activeItem.style.top = y + 'px';
+  }
 </script>
 </body>
 </html>
