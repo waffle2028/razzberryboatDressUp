@@ -4,27 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-      .dress-up-container {
-          position: relative;
-          width: 400px;
-          height: 400px;
-          border: 2px dashed #aaa;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-      }
-
       #body {
-          background-image: url('img/body.webp');
           position: absolute;
-          width: 100px;
-          height: 100px;
-          background-size: cover;
-          background-repeat: no-repeat;
+          background-image: url('img/body.webp');
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          aspect-ratio: 1/1; /* Set aspect ratio to match the image */
+      }
+
+      #body img {
+          width: 100%;
+          height: auto;
       }
 
       .clothing-item {
@@ -43,7 +33,7 @@
 </head>
 <body>
 <div class="dress-up-container">
-  <div id="body"></div>
+  <div id="body"><img src="img/body.webp" alt="Body Image" draggable="false"></div>
   <div class="clothing-item shirt" style="top: 250px; left: 150px;"></div>
 </div>
 
