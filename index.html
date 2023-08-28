@@ -2,9 +2,57 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+      .dress-up-container {
+          position: relative;
+          width: 400px;
+          height: 400px;
+          border: 2px dashed #aaa;
+      }
+
+      .clothing-item {
+          position: absolute;
+          cursor: pointer;
+      }
+  </style>
 </head>
 <body>
+<div class="dress-up-container">
+  <div class="clothing-item" style="background-image: url(img/body.webp); width: 232px; height: 539px"></div>
+</div>
 
+<script>
+  const clothingItems = document.querySelectorAll('.clothing-item');
+  let activeItem = null;
+
+  clothingItems.forEach(item => {
+    item.addEventListener('mousedown', (e) => {
+      activeItem = item;
+      const offsetX = e.clientX - item.getBoundingClientRect().left;
+      const offsetY = e.clientY - item.getBoundingClientRect().top;
+
+      item.style.zIndex = 1;
+      item.style.transform = 'scale(1.1)';
+      item.style.cursor = 'grabbing';
+
+      document.addEventListener('mousemove', moveItem);
+      document.addEventListener('mouseup', () => {
+        document.removeEventListener('mousemove', moveItem);
+        item.style.zIndex = '';
+        item.style.transform = '';
+        item.style.cursor = 'pointer';
+        activeItem = null;
+      });
+
+      function moveItem(e) {
+        const x = e.clientX - offsetX;
+        const y = e.clientY - offsetY;
+        item.style.left = x + 'px';
+        item.style.top = y + 'px';
+      }
+    });
+  });
+</script>
 </body>
 </html>
