@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="lib/pickr-1.8.2/dist/themes/nano.min.css"/>
+  <script src="lib/pickr-1.8.2/dist/pickr.es5.min.js"></script>
   <style>
       .character {
           position: absolute;
@@ -15,13 +17,66 @@
           position: absolute;
           cursor: pointer;
       }
+
+      .pickr {
+          visibility: hidden;
+          height: 0;
+      }
   </style>
 </head>
 <body>
+<div class="color-picker"></div>
+<div>Click on clothes to customize color</div>
 <img class="character" src="img/body.webp" alt="Body Image" draggable="false">
-<img class="draggable-item" src="img/t-shirt_white2.png" draggable="false">
-<img class="draggable-item" src="img/t-shirt_white2.png" draggable="false" style="top: 200px">
+<div class="draggable-item">
+  <img class="color-customizable" src="img/t-shirt_white3.webp" draggable="false" onload="getPixels(this)"
+       style="position:absolute;">
+  <img src="img/t-shirt_white3-value.webp" draggable="false" style="position:absolute;">
+</div>
+<div class="draggable-item" style="top: 200px">
+  <img class="color-customizable" src="img/t-shirt_white3.webp" draggable="false" onload="getPixels(this)"
+       style="position:absolute;">
+  <img src="img/t-shirt_white3-value.webp" draggable="false" style="position:absolute;">
+</div>
 <script>
+  // Simple example, see optional options for more configuration.
+  const pickr = Pickr.create({
+    el: '.color-picker',
+    theme: 'nano', // or 'monolith', or 'nano'
+    swatches: [
+      'rgba(244, 67, 54, 1)',
+      'rgba(233, 30, 99, 0.95)',
+      'rgba(156, 39, 176, 0.9)',
+      'rgba(103, 58, 183, 0.85)',
+      'rgba(63, 81, 181, 0.8)',
+      'rgba(33, 150, 243, 0.75)',
+      'rgba(3, 169, 244, 0.7)',
+      'rgba(0, 188, 212, 0.7)',
+      'rgba(0, 150, 136, 0.75)',
+      'rgba(76, 175, 80, 0.8)',
+      'rgba(139, 195, 74, 0.85)',
+      'rgba(205, 220, 57, 0.9)',
+      'rgba(255, 235, 59, 0.95)',
+      'rgba(255, 193, 7, 1)'
+    ],
+
+    components: {
+      // Main components
+      preview: true,
+      opacity: true,
+      hue: true,
+
+      // Input / output Options
+      interaction: {
+        input: true,
+      }
+    }
+  });
+
+  pickr.on('change', (color, source, instance) => {
+    changeColor(...color.toRGBA())
+  });
+
   const clothingItems = document.querySelectorAll('.draggable-item');
   let activeItem = null;
   let offsetX, offsetY;
@@ -33,15 +88,18 @@
       offsetY = e.clientY - item.getBoundingClientRect().top;
 
       item.style.zIndex = 1;
-      item.style.transform = 'scale(1.1)';
+      // item.style.transform = 'scale(1.1)';
       item.style.cursor = 'grabbing';
 
-      document.addEventListener('mousemove', moveItem);
-      document.addEventListener('mouseup', () => {
-        document.removeEventListener('mousemove', moveItem);
+      item.addEventListener('mousemove', moveItem);
+      item.addEventListener('mouseup', () => {
+        item.removeEventListener('mousemove', moveItem);
         item.style.zIndex = '';
         item.style.transform = '';
         item.style.cursor = 'pointer';
+
+        activeColoringItem = activeItem.getElementsByClassName("color-customizable")[0];
+        pickr.show();
         activeItem = null;
       });
     });
@@ -56,6 +114,54 @@
     activeItem.style.left = x + 'px';
     activeItem.style.top = y + 'px';
   }
+
+  let activeColoringItem = document.getElementsByClassName("color-customizable")[0];
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  let originalPixels = null;
+  let currentPixels = null;
+
+  function getPixels(img) {
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, 0, 0, img.width, img.height);
+    originalPixels = ctx.getImageData(0, 0, img.width, img.height);
+    currentPixels = ctx.getImageData(0, 0, img.width, img.height);
+
+    img.onload = null;
+  }
+
+  function hexToRGB(hex) {
+    const long = parseInt(hex.replace(/^#/, ""), 16);
+    return {
+      R: (long >>> 16) & 0xff,
+      G: (long >>> 8) & 0xff,
+      B: long & 0xff
+    };
+  }
+
+  function changeColor(newR, newG, newB, newA) {
+    if (!originalPixels) {
+      return;
+    }
+
+    let I = 0;
+    const L = originalPixels.data.length;
+    for (; I < L; I += 4) {
+      if (originalPixels.data[I + 3] <= 0) { // ignore transparent
+        continue;
+      }
+      currentPixels.data[I] = newR;
+      currentPixels.data[I + 1] = newG;
+      currentPixels.data[I + 2] = newB;
+      currentPixels.data[I + 3] = newA * 255;
+    }
+
+    ctx.putImageData(currentPixels, 0, 0);
+    activeColoringItem.src = canvas.toDataURL("image/png");
+  }
+
 </script>
 </body>
 </html>
